@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+	<div class="row">
+		<div class="page-header">
+			<h1>Home Temperature Monitoring System <small>Minor Project Lab EXTC D MPSTME Mumbai</small></h1>
+		</div>
+	</div>
+	<div class="row">
+		<div class="panel panel-default">
+			<!-- Default panel contents -->
+			<div class="panel-heading">Temperature readings posted by Pi</div>
+			<div class="panel-body">
+				<p>The following temperature readings have been posted to http://pi-termperature.appspot.com using the HTTP protocol and written to Google's NoSQL database. The following data is the most recent queried from the database.</p>
+			</div>
+
+			<!-- Table -->
+			<table class="table">
+				<tr>
+					<th>Celsius</th>
+					<th>Fahrenheit</th>
+					<th>Timestamp</th>
+				</tr>
+				{% if readings %}
+				{% for reading in readings %}
+				<tr>
+					<td>{{ reading.celsius }}</td>
+					<td>{{ reading.fahrenheit }}</td>
+					<td>{{ reading.timestamp.strftime('%c') }}</td>
+				</tr>
+				{% endfor %}
+				{% endif %}
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock %}

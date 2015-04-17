@@ -17,15 +17,22 @@
 
 import datetime
 import jinja2
+import logging
 import os
 import string
+import time
 import webapp2
 
+from dbmodels import *
 
 # initializing jinja2
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 							   autoescape = True)
+
+
+def temp_key(group = 'default'):
+    return db.Key.from_path('temp', group)
 
 
 class Handler(webapp2.RequestHandler):
@@ -41,9 +48,28 @@ class Handler(webapp2.RequestHandler):
 		self.write(self.render_str(template, **params))
 
 
-class MainHandler(webapp2.RequestHandler):
-    def get(self):
-        self.response.write('Hello world!')
+class MainHandler(Handler):
+
+	def get(self):
+	# while True:	
+		readings = Temperature.all().ancestor(temp_key())
+		self.render_template('main.html',
+							 title = 'Home Temperature Monitoring System',
+							 readings = readings)
+			# time.sleep(10)
+
+
+	def post(self):
+		logging.error('Post request reached here.')
+		cel = self.request.get('celsius')
+		fah = self.request.get('fahrenheit')
+		ts = self.request.get('timestamp')
+		temperature = Temperature.construct(float(cel),
+											float(fah),
+											datetime.datetime.strptime(ts,
+												'%c'))
+		temperature.put()
+
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
