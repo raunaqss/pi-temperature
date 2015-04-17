@@ -9,7 +9,7 @@
 	<div class="row">
 		<div class="panel panel-default">
 			<!-- Default panel contents -->
-			<div class="panel-heading">Temperature readings posted by Pi</div>
+			<div class="panel-heading h3 no-margin">Temperature readings posted by Pi</div>
 			<div class="panel-body">
 				<p>The following temperature readings have been posted to http://pi-termperature.appspot.com using the HTTP protocol and written to Google's NoSQL database. The following data is the most recent queried from the database.</p>
 			</div>
@@ -32,6 +32,20 @@
 				{% endif %}
 			</table>
 		</div>
+		<nav>
+			<ul class="pager">
+				{% if older_n %}
+				<li class="next"><a href="/?n={{ n + older_n }}">Older <span aria-hidden="true">&rarr;</span></a></li>
+				{% else %}
+				<li class="next disabled"><a href="/?n={{ n }}">Older <span aria-hidden="true">&rarr;</span></a></li>
+				{% endif %}
+				{% if newer_n %}
+				<li class="previous"><a href="/?n={{ n - newer_n }}"><span aria-hidden="true">&larr;</span> Newer</a></li>
+				{% else %}
+				<li class="previous disabled"><a href="/?n={{ n }}"><span aria-hidden="true">&larr;</span> Newer</a></li>
+				{% endif %}
+			</ul>
+		</nav>
 	</div>
 </div>
 {% endblock %}

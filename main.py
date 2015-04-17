@@ -24,15 +24,12 @@ import time
 import webapp2
 
 from dbmodels import *
+from utils import *
 
 # initializing jinja2
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 							   autoescape = True)
-
-
-def temp_key(group = 'default'):
-    return db.Key.from_path('temp', group)
 
 
 class Handler(webapp2.RequestHandler):
@@ -51,12 +48,47 @@ class Handler(webapp2.RequestHandler):
 class MainHandler(Handler):
 
 	def get(self):
-	# while True:	
-		readings = Temperature.all().ancestor(temp_key())
-		self.render_template('main.html',
-							 title = 'Home Temperature Monitoring System',
-							 readings = readings)
-			# time.sleep(10)
+		n = self.request.get('n')
+		if not n:
+			n = '0'
+		n = int(n)
+		readings = Temperature.all()
+		latest_reading = readings.get()
+		# For current days readings
+		current = readings.ancestor(temp_key(get_date(latest_reading, n)))
+		current_1 = current.get()
+		if not current_1:
+			self.redirect('/')
+		else:
+			# For the link of the older day
+			older = Temperature.all().filter('timestamp <', 
+				date_midnight(current_1.timestamp.date()))
+			older.order('-timestamp')
+			older = older.get()
+			if older:
+				older_diff = current_1.timestamp.date() - older.timestamp.date()
+				older_n = older_diff.days
+			else:
+				older_n = None
+			logging.error(older_n)
+			# For the link of the newer day
+			newer = Temperature.all().filter('timestamp >',
+				date_midnight(current_1.timestamp.date()))
+			newer.order('-timestamp')
+			newer = newer.get()
+			if newer:
+				newer_diff = newer.timestamp.date() - current_1.timestamp.date(
+					)
+				newer_n = newer_diff.days
+			else:
+				newer_n = None
+			logging.error(newer_n)
+			self.render_template('main.html',
+								 title = 'Home Temperature Monitoring System',
+								 readings = current,
+								 older_n = older_n,
+								 newer_n = newer_n,
+								 n = n)
 
 
 	def post(self):

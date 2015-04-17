@@ -5,9 +5,7 @@ import string
 from google.appengine.ext import db
 from google.appengine.api import memcache
 
-
-def temp_key(group = 'default'):
-    return db.Key.from_path('temp', group)
+from utils import *
 
 
 class Temperature(db.Model):
@@ -19,7 +17,7 @@ class Temperature(db.Model):
 
 	@classmethod
 	def construct(cls, cel, fah, ts):
-		return cls(parent = temp_key(),
+		return cls(parent = temp_key(ts.date()),
 				   celsius = cel,
 				   fahrenheit = fah,
 				   timestamp = ts)
