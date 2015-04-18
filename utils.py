@@ -16,5 +16,6 @@ def date_midnight(d):
 
 
 def get_date(reading, n):
-	return date_midnight(reading.timestamp.date()) - datetime.timedelta(
-		days = n)
+	if reading:
+		return date_midnight(reading.timestamp.date()) - datetime.timedelta(
+			days = n)

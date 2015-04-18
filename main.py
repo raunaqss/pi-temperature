@@ -52,43 +52,50 @@ class MainHandler(Handler):
 		if not n:
 			n = '0'
 		n = int(n)
-		readings = Temperature.all()
+		readings = Temperature.all().order('-timestamp')
 		latest_reading = readings.get()
 		# For current days readings
-		current = readings.ancestor(temp_key(get_date(latest_reading, n)))
-		current_1 = current.get()
-		if not current_1:
-			self.redirect('/')
+		if latest_reading:
+			current = Temperature.all().ancestor(temp_key(get_date(latest_reading, n)))
+			current.order('-timestamp')
+			current = tuple(current)
+			# current_1 = current.get()
+			if not current:
+				self.redirect('/')
+			else:
+				current_1 = current[0]
+				# For the link of the older day
+				older = Temperature.all().filter('timestamp <', 
+					date_midnight(current_1.timestamp.date()))
+				older.order('-timestamp')
+				older = older.get()
+				if older:
+					older_diff = current_1.timestamp.date() - older.timestamp.date()
+					older_n = older_diff.days
+				else:
+					older_n = None
+				logging.error(older_n)
+				# For the link of the newer day
+				newer = Temperature.all().filter('timestamp >',
+					date_midnight(current_1.timestamp.date()))
+				newer.order('-timestamp')
+				newer = newer.get()
+				if newer:
+					newer_diff = newer.timestamp.date() - current_1.timestamp.date(
+						)
+					newer_n = newer_diff.days
+				else:
+					newer_n = None
+				logging.error(newer_n)
+				self.render_template('main.html',
+					title = 'Home Temperature Monitoring System',
+					readings = current,
+					older_n = older_n,
+					newer_n = newer_n,
+					n = n)
 		else:
-			# For the link of the older day
-			older = Temperature.all().filter('timestamp <', 
-				date_midnight(current_1.timestamp.date()))
-			older.order('-timestamp')
-			older = older.get()
-			if older:
-				older_diff = current_1.timestamp.date() - older.timestamp.date()
-				older_n = older_diff.days
-			else:
-				older_n = None
-			logging.error(older_n)
-			# For the link of the newer day
-			newer = Temperature.all().filter('timestamp >',
-				date_midnight(current_1.timestamp.date()))
-			newer.order('-timestamp')
-			newer = newer.get()
-			if newer:
-				newer_diff = newer.timestamp.date() - current_1.timestamp.date(
-					)
-				newer_n = newer_diff.days
-			else:
-				newer_n = None
-			logging.error(newer_n)
 			self.render_template('main.html',
-								 title = 'Home Temperature Monitoring System',
-								 readings = current,
-								 older_n = older_n,
-								 newer_n = newer_n,
-								 n = n)
+				title = 'Home Temperature Monitoring System')
 
 
 	def post(self):
